@@ -11,6 +11,7 @@ import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,14 +27,15 @@ import java.util.List;
  * 相关诗歌散文
  */
 public class LiteratureView extends FrameLayout{
+    private static final String TAG = "Literature";
     private static final int DEFAULT_DIVIDER_HEIGHT = 24;
     private static final int PRE = -1,CUR=0,NEXT=1;
-    private View mHeader,mFooter;
     ViewGroup mMiddle;
     List<Literature> literatureList = new ArrayList<>();
     View preView,currentView,nextView,tempView;
     int curPos;
     boolean viewIsChanging;
+    private View mHeader, mFooter;
     private int mDividerHeight = DEFAULT_DIVIDER_HEIGHT;
     private int mMidHeight;
     private int mFullHeight;
@@ -44,6 +46,50 @@ public class LiteratureView extends FrameLayout{
         super(context, attrs);
         initView();
         validateViews();
+    }
+
+    /**
+     * 某些api需要17以上
+     *
+     * @param context RendScript需要的context
+     * @param bitmap  原图
+     * @return 高斯模糊处理过的bitmap
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public static Bitmap blurBitmap(Context context, Bitmap bitmap) {
+
+        //Let's create an empty bitmap with the same size of the bitmap we want to blur
+        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+        //Instantiate a new Renderscript
+        RenderScript rs = RenderScript.create(context);
+
+        //Create an Intrinsic Blur Script using the Renderscript
+        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+
+        //Create the Allocations (in/out) with the Renderscript and the in/out bitmaps
+        Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
+        Allocation allOut = Allocation.createFromBitmap(rs, outBitmap);
+
+        //Set the radius of the blur
+        blurScript.setRadius(25.f);
+
+        //Perform the Renderscript
+        blurScript.setInput(allIn);
+        blurScript.forEach(allOut);
+
+        //Copy the final bitmap created by the out Allocation to the outBitmap
+        allOut.copyTo(outBitmap);
+
+        //recycle the original bitmap
+        bitmap.recycle();
+
+        //After finishing everything, we destroy the Renderscript.
+        rs.destroy();
+
+        return outBitmap;
+
+
     }
 
     private void validateViews(){
@@ -60,6 +106,7 @@ public class LiteratureView extends FrameLayout{
         mHeaderHeight = mHeader.getMeasuredHeight();
         mHalfHeight = mFullHeight - mHeaderHeight - mDividerHeight;
         mMidHeight = mHalfHeight - mHeaderHeight - mDividerHeight;
+        Log.d(TAG, "full:" + mFullHeight + " half:" + mHalfHeight + " mid:" + mMidHeight + " header:" + mHeaderHeight);
         notifyDateChange();
     }
 
@@ -73,7 +120,7 @@ public class LiteratureView extends FrameLayout{
         ViewPropertyAnimator curViewAnim = currentView.animate();
         curViewAnim.translationYBy(-mMidHeight - mDividerHeight);
         curViewAnim.setDuration(1000);
-        ViewPropertyAnimator nextViewAnim = nextView.animate();
+        final ViewPropertyAnimator nextViewAnim = nextView.animate();
         nextViewAnim.translationYBy(-mMidHeight - mDividerHeight);
         nextViewAnim.setDuration(1000);
         curViewAnim.start();
@@ -81,15 +128,21 @@ public class LiteratureView extends FrameLayout{
         nextViewAnim.setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
+                //remove listener, end会被调俩回,16+可用withEndAction替换
+                nextViewAnim.setListener(new AnimatorListenerAdapter() {
+                });
                 curPos++;
                 tempView = preView;
                 preView = currentView;
                 currentView = nextView;
                 nextView = tempView;
-                setHeader(PRE,curPos - 1);
-                resetContentView(nextView,NEXT,curPos+1);
+                setHeader(PRE, curPos - 1);
+                resetContentView(nextView, NEXT, curPos + 1);
+//                        setHeader(PRE, curPos - 1);
+//                        setHeader(NEXT, curPos + 1);
                 viewIsChanging = false;
+                Log.d(TAG, "cur pos:" + curPos);
+
             }
         });
     }
@@ -99,23 +152,27 @@ public class LiteratureView extends FrameLayout{
         ViewPropertyAnimator curViewAnim = currentView.animate();
         curViewAnim.translationYBy(mMidHeight + mDividerHeight);
         curViewAnim.setDuration(1000);
-        ViewPropertyAnimator nextViewAnim = preView.animate();
-        nextViewAnim.translationYBy(mMidHeight + mDividerHeight);
-        nextViewAnim.setDuration(1000);
+        final ViewPropertyAnimator preViewAnim = preView.animate();
+        preViewAnim.translationYBy(mMidHeight + mDividerHeight);
+        preViewAnim.setDuration(1000);
         curViewAnim.start();
-        nextViewAnim.start();
-        nextViewAnim.setListener(new AnimatorListenerAdapter() {
+        preViewAnim.start();
+        preViewAnim.setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
+                preViewAnim.setListener(new AnimatorListenerAdapter() {
+                });
                 curPos--;
-                tempView = preView;
-                preView = currentView;
-                currentView = nextView;
-                nextView = tempView;
-                setHeader(NEXT,curPos + 1);
-                resetContentView(preView,PRE,curPos-1);
+                tempView = nextView;
+                nextView = currentView;
+                currentView = preView;
+                preView = tempView;
+                setHeader(NEXT, curPos + 1);
+                resetContentView(preView, PRE, curPos - 1);
+//                setHeader(PRE, curPos - 1);
+//                setHeader(NEXT, curPos + 1);
                 viewIsChanging = false;
+                Log.d(TAG, "cur pos:" + curPos);
             }
         });
     }
@@ -125,11 +182,13 @@ public class LiteratureView extends FrameLayout{
         params.height = getViewHeight(pos);
         v.setLayoutParams(params);
         v.setY(getViewY(index, pos));
+        Log.d(TAG, "index:" + index + " pos:" + pos + " height:" + v.getHeight());
         setContent(v, pos);
-        setHeader(index,pos);
+        setHeader(index, pos);
     }
 
     private void setHeader(int index, int pos) {
+        Log.d(TAG, "header index:" + index + " pos:" + pos);
         switch (index){
             case PRE:
                 if (pos<0)
@@ -149,6 +208,7 @@ public class LiteratureView extends FrameLayout{
     }
 
     private void setContent(View v, int pos) {
+        Log.d(TAG, "content pos:" + pos);
         if (pos < 0 || pos >= literatureList.size())
             return;
         TextView title = (TextView) v.findViewById(R.id.tv_title);
@@ -160,40 +220,6 @@ public class LiteratureView extends FrameLayout{
         content.setText(literatureList.get(pos).getContent());
     }
 
-    //全尺寸
-    private void setViewFull(View v){
-        ViewGroup.LayoutParams params = v.getLayoutParams();
-        params.height = (int) (mMidHeight + mDividerHeight * 2 + mFooter.getHeight() * 2);
-        v.setLayoutParams(params);
-    }
-
-    //半全尺寸
-    private void setViewHalfFull(View v){
-        ViewGroup.LayoutParams params = v.getLayoutParams();
-        params.height = (int) (mMidHeight + mDividerHeight + mFooter.getHeight());
-        v.setLayoutParams(params);
-    }
-
-    //正常尺寸
-    private void setViewCenter(View v){
-        ViewGroup.LayoutParams params = v.getLayoutParams();
-        params.height = (int) (mMidHeight);
-        v.setLayoutParams(params);
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        super.onLayout(changed, l, t, r, b);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    /**
-     *
-     */
     private void initView() {
         initHeader();
         initMiddle();
@@ -204,6 +230,19 @@ public class LiteratureView extends FrameLayout{
         addView(mFooter, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
     }
 
+    private void initHeader() {
+        mHeader = View.inflate(getContext(), R.layout.literature_h, null);
+        mHeader.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!viewIsChanging) {
+                    viewIsChanging = true;
+                    Log.d(TAG, "header click");
+                    onScrollDown();
+                }
+            }
+        });
+    }
 
     private void initFooter() {
         mFooter = View.inflate(getContext(), R.layout.literature_h, null);
@@ -212,13 +251,8 @@ public class LiteratureView extends FrameLayout{
             public void onClick(View v) {
                 if (!viewIsChanging) {
                     viewIsChanging = true;
+                    Log.d(TAG, "fooder click");
                     onScrollUp();
-                    v.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            viewIsChanging = false;
-                        }
-                    });
                 }
             }
         });
@@ -265,25 +299,6 @@ public class LiteratureView extends FrameLayout{
         }
     }
 
-    private void initHeader() {
-        mHeader = View.inflate(getContext(),R.layout.literature_h,null);
-        mHeader.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!viewIsChanging){
-                    viewIsChanging = true;
-                    onScrollDown();
-                    v.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            viewIsChanging = false;
-                        }
-                    });
-                }
-            }
-        });
-    }
-
     /**
      * 设置中间区域背景
      * @param background 传bitmap
@@ -292,55 +307,13 @@ public class LiteratureView extends FrameLayout{
 
     }
 
-    /**
-     * 某些api需要17以上
-     * @param context RendScript需要的context
-     * @param bitmap 原图
-     * @return 高斯模糊处理过的bitmap
-     */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public static Bitmap blurBitmap(Context context,Bitmap bitmap){
-
-        //Let's create an empty bitmap with the same size of the bitmap we want to blur
-        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-
-        //Instantiate a new Renderscript
-        RenderScript rs = RenderScript.create(context);
-
-        //Create an Intrinsic Blur Script using the Renderscript
-        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
-
-        //Create the Allocations (in/out) with the Renderscript and the in/out bitmaps
-        Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
-        Allocation allOut = Allocation.createFromBitmap(rs, outBitmap);
-
-        //Set the radius of the blur
-        blurScript.setRadius(25.f);
-
-        //Perform the Renderscript
-        blurScript.setInput(allIn);
-        blurScript.forEach(allOut);
-
-        //Copy the final bitmap created by the out Allocation to the outBitmap
-        allOut.copyTo(outBitmap);
-
-        //recycle the original bitmap
-        bitmap.recycle();
-
-        //After finishing everything, we destroy the Renderscript.
-        rs.destroy();
-
-        return outBitmap;
-
-
-    }
-
-
     public void notifyDateChange() {
         if (curPos>=literatureList.size())
             curPos = literatureList.size() - 1;
         resetContentView(currentView,CUR,curPos);
         resetContentView(preView,PRE,curPos-1);
-        resetContentView(nextView,NEXT,curPos+1);
+        resetContentView(nextView,NEXT,curPos + 1);
+        setHeader(PRE, curPos - 1);
+        setHeader(NEXT, curPos + 1);
     }
 }

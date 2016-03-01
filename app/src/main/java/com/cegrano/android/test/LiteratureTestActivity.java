@@ -1,7 +1,7 @@
 package com.cegrano.android.test;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import com.cegrano.android.postcardview.Literature;
 import com.cegrano.android.postcardview.LiteratureView;
@@ -18,6 +18,7 @@ public class LiteratureTestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_literature_test);
         LiteratureView literatureView = (LiteratureView) findViewById(R.id.view_literature);
         List<Literature> literature = new ArrayList<>();
+        Literature.sid = 0;
         literature.add(new Literature());
         literature.add(new Literature());
         literature.add(new Literature());

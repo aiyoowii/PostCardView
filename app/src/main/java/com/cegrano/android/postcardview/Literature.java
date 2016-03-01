@@ -5,16 +5,22 @@ package com.cegrano.android.postcardview;
  * 文学赏析item实体
  */
 public class Literature {
+    public static int sid = 0;
+    int id;
     String title;
     String author;
     String publish_time;
     String content;
 
     public Literature() {
-        title = "天空海阔";
+        sid++;
+        if (sid > 10)
+            sid = 0;
+        id = sid;
+        title = "天空海阔" + id;
         author = "林子祥";
         publish_time = "1977-04-20";
-        content = "远远当天有这小岛数个\n" +
+        content = id + "远远当天有这小岛数个\n" +
                 "艇里的歌透过清风远播\n" +
                 "遥遥星光正似岸上灯火\n" +
                 "总不少也总不多\n" +
