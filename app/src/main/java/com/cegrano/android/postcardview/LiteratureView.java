@@ -35,6 +35,7 @@ public class LiteratureView extends FrameLayout{
     View preView,currentView,nextView,tempView;
     int curPos;
     boolean viewIsChanging;
+    Bitmap mMidBack;
     private View mHeader, mFooter;
     private int mDividerHeight = DEFAULT_DIVIDER_HEIGHT;
     private int mMidHeight;
@@ -303,8 +304,10 @@ public class LiteratureView extends FrameLayout{
      * 设置中间区域背景
      * @param background 传bitmap
      */
-    public void setBackground(Bitmap background){
-
+    public void setMidBackground(int background) {
+        preView.setBackgroundResource(background);
+        nextView.setBackgroundResource(background);
+        currentView.setBackgroundResource(background);
     }
 
     public void notifyDateChange() {

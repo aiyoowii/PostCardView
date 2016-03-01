@@ -29,6 +29,8 @@ public class LiteratureTestActivity extends AppCompatActivity {
         literature.add(new Literature());
         literature.add(new Literature());
         literatureView.setLiteratureList(literature);
+//        literatureView.setMidBackground(((BitmapDrawable) getResources().getDrawable(R.mipmap.text_bg)).getBitmap());
+        literatureView.setMidBackground(R.mipmap.text_bg);
         literatureView.notifyDateChange();
     }
 }

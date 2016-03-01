@@ -28,6 +28,7 @@ import java.util.List;
  * 歌词卡片模版
  */
 public class PostCardView extends View {
+    public static final String TAG = "PostCardView";
     private CardStyle cardStyle;
     private Paint textPaint = new Paint();
     private Path path;
@@ -39,7 +40,19 @@ public class PostCardView extends View {
         textPaint = new Paint();
         matrix = new Matrix();
         path = new Path();
-        path.lineTo(0,10000);
+        path.lineTo(0, 10000);
+    }
+
+    public static void imageInsert(Context context, String filePath) {
+        // 其次把文件插入到系统图库
+        try {
+            MediaStore.Images.Media.insertImage(context.getContentResolver(),
+                    filePath, filePath.substring(0, filePath.lastIndexOf('.')), null);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        // 最后通知图库更新
+        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + filePath)));
     }
 
     /**
@@ -48,7 +61,8 @@ public class PostCardView extends View {
      */
     public void setCardStyle(CardStyle cardStyle){
         this.cardStyle = cardStyle;
-        drawableBg = BitmapFactory.decodeResource(getResources(),cardStyle.cardBack);
+
+        drawableBg = BitmapFactory.decodeResource(getResources(), cardStyle.cardBack.bg);
         invalidate();
     }
 
@@ -57,7 +71,9 @@ public class PostCardView extends View {
         super.onDraw(canvas);
         //draw back
         if (drawableBg != null) {
-            canvas.drawBitmap(drawableBg, matrix, textPaint);
+            CardBgStyle bgStyle = cardStyle.cardBack;
+            canvas.drawBitmap(drawableBg, bgStyle.posX, bgStyle.posY, textPaint);
+            Log.d(TAG, "draw bg--x:" + bgStyle.posX + " y:" + bgStyle.posY);
         }
         //draw text
         List<CardTextStyle> texts = cardStyle.cardTexts;
@@ -81,8 +97,12 @@ public class PostCardView extends View {
                             py+=w;
                         }
                     }
-                } else
+                } else {
+                    textPaint.setTextAlign(Paint.Align.CENTER);
                     canvas.drawText(textStyle.text, 0, textStyle.textLength, textStyle.posX, textStyle.posY, textPaint);
+                }
+
+                Log.d(TAG, "draw text--x:" + textStyle.posX + " y:" + textStyle.posY);
             }
         }
     }
@@ -122,19 +142,7 @@ public class PostCardView extends View {
         b.compress(Bitmap.CompressFormat.JPEG, 90, fos);
         fos.flush();
         fos.close();
-        imageInsert(getContext(),f.getPath());
-    }
-
-    public static void imageInsert(Context context, String filePath) {
-        // 其次把文件插入到系统图库
-        try {
-            MediaStore.Images.Media.insertImage(context.getContentResolver(),
-                    filePath, filePath.substring(0, filePath.lastIndexOf('.')), null);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        // 最后通知图库更新
-        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + filePath)));
+        imageInsert(getContext(), f.getPath());
     }
 
     /**
@@ -160,15 +168,26 @@ public class PostCardView extends View {
         }
     }
 
+    public static class CardBgStyle {
+        @DrawableRes
+        int bg;
+        float posX, posY;
+
+        public CardBgStyle(int bg, float posX, float posY) {
+            this.bg = bg;
+            this.posX = posX;
+            this.posY = posY;
+        }
+    }
+
     /**
      * card's background and every text
      */
     public static class CardStyle{
-        @DrawableRes
-        int cardBack;
+        CardBgStyle cardBack;
         List<CardTextStyle> cardTexts;
 
-        public CardStyle(int cardBack, List<CardTextStyle> cardTexts) {
+        public CardStyle(CardBgStyle cardBack, List<CardTextStyle> cardTexts) {
             this.cardBack = cardBack;
             this.cardTexts = cardTexts;
         }
