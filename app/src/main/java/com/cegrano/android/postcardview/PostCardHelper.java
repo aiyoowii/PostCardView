@@ -17,6 +17,8 @@ public class PostCardHelper {
                 return Temper1();
             case 1:
                 return Temper2();
+            case 2:
+                return Temper3();
             default:
                 return Temper0();
         }
@@ -37,13 +39,27 @@ public class PostCardHelper {
         PostCardView.CardTextStyle text1 = new PostCardView.CardTextStyle(Color.WHITE, 44, 540, 635, 16, false, "Here comes another fight");
         PostCardView.CardTextStyle text2 = new PostCardView.CardTextStyle(Color.WHITE, 60, 540, 700, 100, false, "新的战役将要开始");
         PostCardView.CardTextStyle text3 = new PostCardView.CardTextStyle(Color.WHITE, 44, 540, 800, 16, false, "Here comes another fight");
-        PostCardView.CardTextStyle text4 = new PostCardView.CardTextStyle(Color.WHITE, 60, 540, 850, 100, false, "新的战役将要开始");
+        PostCardView.CardTextStyle text4 = new PostCardView.CardTextStyle(Color.WHITE, 60, 540, 865, 100, false, "新的战役将要开始");
         List<PostCardView.CardTextStyle> texts = new ArrayList<>();
         texts.add(text1);
         texts.add(text2);
         texts.add(text3);
         texts.add(text4);
         PostCardView.CardBgStyle bgStyle = new PostCardView.CardBgStyle((R.mipmap.bg_card_temper2), 115, 350);
+        return new PostCardView.CardStyle(bgStyle, texts);
+    }
+
+    private static PostCardView.CardStyle Temper3() {
+        PostCardView.CardTextStyle text1 = new PostCardView.CardTextStyle(Color.WHITE, 62, 50, 142, 16, true, "新的战役将要开始");
+        PostCardView.CardTextStyle text2 = new PostCardView.CardTextStyle(Color.WHITE, 42, 142, 142, 100, true, "Here comes another fight");
+        PostCardView.CardTextStyle text3 = new PostCardView.CardTextStyle(Color.WHITE, 62, 214, 142, 16, true, "新的战役将要开始");
+        PostCardView.CardTextStyle text4 = new PostCardView.CardTextStyle(Color.WHITE, 42, 306, 142, 100, true, "Here comes another fight");
+        List<PostCardView.CardTextStyle> texts = new ArrayList<>();
+        texts.add(text1);
+        texts.add(text2);
+        texts.add(text3);
+        texts.add(text4);
+        PostCardView.CardBgStyle bgStyle = new PostCardView.CardBgStyle((R.mipmap.bg_card_temper3), 50, 104);
         return new PostCardView.CardStyle(bgStyle, texts);
     }
 
