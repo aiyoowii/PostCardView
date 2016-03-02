@@ -10,16 +10,19 @@ import java.util.List;
  * helper
  */
 public class PostCardHelper {
-    public static int COUNT = 2;
+    public static int COUNT = 3;
     public static PostCardView.CardStyle getTemper(int index){
         switch (index){
             case 0:
                 return Temper1();
+            case 1:
+                return Temper2();
             default:
                 return Temper0();
         }
     }
 
+    //ps depend on 1080p
     private static PostCardView.CardStyle Temper1() {
         PostCardView.CardTextStyle text1 = new PostCardView.CardTextStyle(Color.WHITE, 70, 488, 400, 16, true, "新的战役将要开始");
         PostCardView.CardTextStyle text2 = new PostCardView.CardTextStyle(Color.WHITE, 50, 595, 400, 100, true, "Here comes another fight");
@@ -27,6 +30,20 @@ public class PostCardHelper {
         texts.add(text1);
         texts.add(text2);
         PostCardView.CardBgStyle bgStyle = new PostCardView.CardBgStyle((R.mipmap.bg_card_temper1), 302, 182);
+        return new PostCardView.CardStyle(bgStyle, texts);
+    }
+
+    private static PostCardView.CardStyle Temper2() {
+        PostCardView.CardTextStyle text1 = new PostCardView.CardTextStyle(Color.WHITE, 44, 540, 635, 16, false, "Here comes another fight");
+        PostCardView.CardTextStyle text2 = new PostCardView.CardTextStyle(Color.WHITE, 60, 540, 700, 100, false, "新的战役将要开始");
+        PostCardView.CardTextStyle text3 = new PostCardView.CardTextStyle(Color.WHITE, 44, 540, 800, 16, false, "Here comes another fight");
+        PostCardView.CardTextStyle text4 = new PostCardView.CardTextStyle(Color.WHITE, 60, 540, 850, 100, false, "新的战役将要开始");
+        List<PostCardView.CardTextStyle> texts = new ArrayList<>();
+        texts.add(text1);
+        texts.add(text2);
+        texts.add(text3);
+        texts.add(text4);
+        PostCardView.CardBgStyle bgStyle = new PostCardView.CardBgStyle((R.mipmap.bg_card_temper2), 115, 350);
         return new PostCardView.CardStyle(bgStyle, texts);
     }
 

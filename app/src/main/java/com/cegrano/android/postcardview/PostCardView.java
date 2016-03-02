@@ -99,7 +99,10 @@ public class PostCardView extends View {
                     }
                 } else {
                     textPaint.setTextAlign(Paint.Align.CENTER);
-                    canvas.drawText(textStyle.text, 0, textStyle.textLength, textStyle.posX, textStyle.posY, textPaint);
+                    int len = textStyle.textLength;
+                    if (textStyle.text.length() < len)
+                        len = textStyle.text.length();
+                    canvas.drawText(textStyle.text, 0, len, textStyle.posX, textStyle.posY, textPaint);
                 }
 
                 Log.d(TAG, "draw text--x:" + textStyle.posX + " y:" + textStyle.posY);
