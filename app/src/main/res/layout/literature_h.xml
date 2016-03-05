@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="85dp"
-    android:orientation="vertical"
+    android:layout_height="57dp"
+    android:background="@color/lit_color_FFFFFF"
     android:gravity="center_horizontal"
-    android:background="@color/lit_color_FFFFFF">
+    android:orientation="vertical">
     <View
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
@@ -13,15 +13,15 @@
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:textSize="27sp"
-        android:textColor="@color/lit_color_222222"/>
+        android:layout_marginTop="12dp"
+        android:textColor="@color/lit_color_222222"
+        android:textSize="18sp" />
     <TextView
         android:id="@+id/tv_author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="7dp"
-        android:textSize="15sp"
-        android:textColor="@color/lit_color_999999"/>
+        android:textColor="@color/lit_color_999999"
+        android:textSize="10sp" />
 
 </LinearLayout>
