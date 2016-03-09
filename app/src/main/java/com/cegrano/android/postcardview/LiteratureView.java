@@ -26,13 +26,13 @@ import java.util.List;
  * Created by cegrano on 16/2/24.
  * 相关诗歌散文
  */
-public class LiteratureView extends FrameLayout{
+public class LiteratureView extends FrameLayout {
     private static final String TAG = "Literature";
     private static final int DEFAULT_DIVIDER_HEIGHT = 24;
-    private static final int PRE = -1,CUR=0,NEXT=1;
+    private static final int PRE = -1, CUR = 0, NEXT = 1;
     ViewGroup mMiddle;
     List<Literature> literatureList = new ArrayList<>();
-    View preView,currentView,nextView,tempView;
+    View preView, currentView, nextView, tempView;
     int curPos;
     boolean viewIsChanging;
     Bitmap mMidBack;
@@ -93,7 +93,7 @@ public class LiteratureView extends FrameLayout{
 
     }
 
-    private void validateViews(){
+    private void validateViews() {
         post(new Runnable() {
             @Override
             public void run() {
@@ -116,7 +116,7 @@ public class LiteratureView extends FrameLayout{
         this.literatureList.addAll(literatureList);
     }
 
-    private void onScrollUp(){
+    private void onScrollUp() {
         mFooter.setVisibility(INVISIBLE);
         ViewPropertyAnimator curViewAnim = currentView.animate();
         curViewAnim.translationYBy(-mMidHeight - mDividerHeight);
@@ -148,7 +148,7 @@ public class LiteratureView extends FrameLayout{
         });
     }
 
-    private void onScrollDown(){
+    private void onScrollDown() {
         mHeader.setVisibility(INVISIBLE);
         ViewPropertyAnimator curViewAnim = currentView.animate();
         curViewAnim.translationYBy(mMidHeight + mDividerHeight);
@@ -178,7 +178,7 @@ public class LiteratureView extends FrameLayout{
         });
     }
 
-    private void resetContentView(View v,int index,int pos){
+    private void resetContentView(View v, int index, int pos) {
         ViewGroup.LayoutParams params = v.getLayoutParams();
         params.height = getViewHeight(pos);
         v.setLayoutParams(params);
@@ -190,20 +190,20 @@ public class LiteratureView extends FrameLayout{
 
     private void setHeader(int index, int pos) {
         Log.d(TAG, "header index:" + index + " pos:" + pos);
-        switch (index){
+        switch (index) {
             case PRE:
-                if (pos<0)
+                if (pos < 0)
                     mHeader.setVisibility(INVISIBLE);
                 else
                     mHeader.setVisibility(VISIBLE);
-                setContent(mHeader,pos);
+                setContent(mHeader, pos);
                 break;
             case NEXT:
-                if (pos>literatureList.size()-1)
+                if (pos > literatureList.size() - 1)
                     mFooter.setVisibility(INVISIBLE);
                 else
                     mFooter.setVisibility(VISIBLE);
-                setContent(mFooter,pos);
+                setContent(mFooter, pos);
                 break;
         }
     }
@@ -217,8 +217,8 @@ public class LiteratureView extends FrameLayout{
         TextView content = (TextView) v.findViewById(R.id.tv_content);
         title.setText(literatureList.get(pos).getTitle());
         author.setText(literatureList.get(pos).getPublish_time() + "作者:" + literatureList.get(pos).getAuthor());
-        if (content!=null)
-        content.setText(literatureList.get(pos).getContent());
+        if (content != null)
+            content.setText(literatureList.get(pos).getContent());
     }
 
     private void initView() {
@@ -262,25 +262,25 @@ public class LiteratureView extends FrameLayout{
     private void initMiddle() {
 //        mMiddle = View.inflate(getContext(),R.layout.literature_m,null);
         mMiddle = new FrameLayout(getContext());
-        preView = View.inflate(getContext(),R.layout.literature_m,null);
-        currentView = View.inflate(getContext(),R.layout.literature_m,null);
-        nextView = View.inflate(getContext(),R.layout.literature_m,null);
+        preView = View.inflate(getContext(), R.layout.literature_m, null);
+        currentView = View.inflate(getContext(), R.layout.literature_m, null);
+        nextView = View.inflate(getContext(), R.layout.literature_m, null);
         mMiddle.addView(preView);
         mMiddle.addView(currentView);
         mMiddle.addView(nextView);
     }
 
-    private int getViewY(int index,int pos){
+    private int getViewY(int index, int pos) {
         int y = 0;
-        switch (index){
+        switch (index) {
             case PRE:
-                y = -getViewHeight(pos) + getViewY(CUR,pos + 1) - mDividerHeight;
+                y = -getViewHeight(pos) + getViewY(CUR, pos + 1) - mDividerHeight;
                 break;
             case NEXT:
-                y = getViewHeight(pos - 1) + getViewY(CUR,pos - 1) + mDividerHeight;
+                y = getViewHeight(pos - 1) + getViewY(CUR, pos - 1) + mDividerHeight;
                 break;
             case CUR:
-                if (pos == 0){
+                if (pos == 0) {
                     y = 0;
                 } else {
                     y = mHeaderHeight + mDividerHeight;
@@ -290,10 +290,10 @@ public class LiteratureView extends FrameLayout{
         return y;
     }
 
-    private int getViewHeight(int pos){
-        if (literatureList.size()<2){
+    private int getViewHeight(int pos) {
+        if (literatureList.size() < 2) {
             return mFullHeight;
-        } else if (pos == 0 || pos == literatureList.size()-1) {
+        } else if (pos == 0 || pos == literatureList.size() - 1) {
             return mHalfHeight;
         } else {
             return mMidHeight;
@@ -302,6 +302,7 @@ public class LiteratureView extends FrameLayout{
 
     /**
      * 设置中间区域背景
+     *
      * @param background 传bitmap
      */
     public void setMidBackground(int background) {
@@ -311,11 +312,11 @@ public class LiteratureView extends FrameLayout{
     }
 
     public void notifyDateChange() {
-        if (curPos>=literatureList.size())
+        if (curPos >= literatureList.size())
             curPos = literatureList.size() - 1;
-        resetContentView(currentView,CUR,curPos);
-        resetContentView(preView,PRE,curPos-1);
-        resetContentView(nextView,NEXT,curPos + 1);
+        resetContentView(currentView, CUR, curPos);
+        resetContentView(preView, PRE, curPos - 1);
+        resetContentView(nextView, NEXT, curPos + 1);
         setHeader(PRE, curPos - 1);
         setHeader(NEXT, curPos + 1);
     }

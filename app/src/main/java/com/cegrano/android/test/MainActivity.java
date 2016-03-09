@@ -13,6 +13,8 @@ import com.cegrano.android.postcardview.PostCardHelper;
 import com.cegrano.android.postcardview.PostCardView;
 import com.cegrano.android.postcardview.R;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
     int index;
     private PostCardView postCardView;
@@ -30,18 +32,22 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-                postCardView.save();
+                try {
+                    postCardView.saveViewToFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
-        postCardView= (PostCardView) findViewById(R.id.post_card);
+        postCardView = (PostCardView) findViewById(R.id.post_card);
 
-        postCardView.setCardStyle(PostCardHelper.getTemper(index));
+        postCardView.setCardStyle(PostCardHelper.getTemper(index, null));
         postCardView.setBackgroundResource(R.mipmap.text_bg);
         postCardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 index++;
-                postCardView.setCardStyle(PostCardHelper.getTemper(index % PostCardHelper.COUNT));
+                postCardView.setCardStyle(PostCardHelper.getTemper(index % PostCardHelper.COUNT, null));
                 postCardView.invalidate();
             }
         });
@@ -63,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            startActivity(new Intent(MainActivity.this,LiteratureTestActivity.class));
+            startActivity(new Intent(MainActivity.this, LiteratureTestActivity.class));
             return true;
         }
 
