@@ -9,7 +9,7 @@ public class Literature {
     int id;
     String title;
     String author;
-    String publish_time;
+    String time;
     String content;
 
     public Literature() {
@@ -19,7 +19,7 @@ public class Literature {
         id = sid;
         title = "天空海阔" + id;
         author = "林子祥";
-        publish_time = "1977-04-20";
+        time = "1977-04-20";
         content = id + "远远当天有这小岛数个\n" +
                 "艇里的歌透过清风远播\n" +
                 "遥遥星光正似岸上灯火\n" +
@@ -77,12 +77,12 @@ public class Literature {
         this.author = author;
     }
 
-    public String getPublish_time() {
-        return publish_time;
+    public String getTime() {
+        return time;
     }
 
-    public void setPublish_time(String publish_time) {
-        this.publish_time = publish_time;
+    public void setTime(String time) {
+        this.time = time;
     }
 
     public String getContent() {

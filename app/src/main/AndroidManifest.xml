@@ -20,7 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.cegrano.android.test.LiteratureTestActivity"></activity>
+        <activity android:name="com.cegrano.android.test.LiteratureTestActivity" />
+        <activity android:name="com.cegrano.android.test.LrcCardActivity" />
     </application>
 
 </manifest>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lrc_tip"
+    android:layout_width="162dp"
+    android:layout_height="110dp"
+    android:layout_centerInParent="true"
+    android:background="@drawable/audio_bg_card_tip"
+    android:drawablePadding="11dp"
+    android:drawableTop="@drawable/ic_audio_card_save_ok"
+    android:gravity="center"
+    android:minHeight="110dp"
+    android:minWidth="162dp"
+    android:paddingBottom="35dp"
+    android:paddingTop="35dp"
+    android:text="图片已保存到相册"
+    android:textColor="#FFFFFF"
+    android:textSize="16sp" />

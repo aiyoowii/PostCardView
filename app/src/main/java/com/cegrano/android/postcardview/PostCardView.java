@@ -40,10 +40,12 @@ public class PostCardView extends View {
     private float mScale = 0;//视图的比例
     private float mWidthScale = 1.0f;//屏幕和1080的比例
     private float mHeightScale = 1.0f;
+    private float mImageScale = 1.0f;
 
     public PostCardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         textPaint = new TextPaint();
+        textPaint.setAntiAlias(true);
         matrix = new Matrix();
         path = new Path();
         path.lineTo(0, 10000);
@@ -63,8 +65,18 @@ public class PostCardView extends View {
     }
 
     @NonNull
-    public static String newPath() {
+    public static String newPhotoPath() {
+        return Environment.getExternalStorageDirectory().getPath() + "/card/phototemp.jpg";
+    }
+
+    @NonNull
+    public static String newSavePath() {
         return Environment.getExternalStorageDirectory().getPath() + "/card/" + System.currentTimeMillis() + ".jpg";
+    }
+
+    @NonNull
+    public static String newPath() {
+        return Environment.getExternalStorageDirectory().getPath() + "/card/croptemp.jpg";
     }
 
     private void postDraw() {
@@ -74,8 +86,8 @@ public class PostCardView extends View {
                 width = getWidth();
                 height = getHeight();
                 mScale = width / DensityUtil.getWidthInPx(getContext());
-                mWidthScale = DensityUtil.getWidthInPx(getContext()) / 1080;
-                mHeightScale = DensityUtil.getHeightInPx(getContext()) / 1560;
+                mWidthScale = width / mScale / 1080f;
+                mHeightScale = height / mScale / 1560f;
 //                invalidate();
                 if (mScale == 0) {
                     postDraw();
@@ -103,8 +115,13 @@ public class PostCardView extends View {
         opts.inJustDecodeBounds = true;
         BitmapFactory.decodeResource(getResources(), cardStyle.cardBack.bg, opts);
         Log.d(TAG, "bg height:" + opts.outHeight + " width:" + opts.outWidth + " before scale");
-        opts.outHeight = (int) (opts.outHeight * mScale * mWidthScale);
-        opts.outWidth = (int) (opts.outWidth * mScale * mWidthScale);
+        mImageScale = mWidthScale;
+        if (mHeightScale > mImageScale)
+            mImageScale = mHeightScale;
+        opts.outHeight = (int) Math.ceil(opts.outHeight * mImageScale * mScale);
+        opts.outWidth = (int) Math.ceil(opts.outWidth * mImageScale * mScale);
+        if (opts.outHeight > height)
+            opts.outHeight = height;
         opts.inJustDecodeBounds = false;
         Bitmap bg = BitmapFactory.decodeResource(getResources(), cardStyle.cardBack.bg);
         drawableBg = ThumbnailUtils.extractThumbnail(bg, opts.outWidth, opts.outHeight);
@@ -123,7 +140,7 @@ public class PostCardView extends View {
         //draw back
         if (drawableBg != null) {
             CardBgStyle bgStyle = mCardStyle.cardBack;
-            canvas.drawBitmap(drawableBg, getPix(bgStyle.posX), getPix(bgStyle.posY), textPaint);
+            canvas.drawBitmap(drawableBg, getPixX(bgStyle.posX, drawableBg.getWidth()), getPixY(bgStyle.posY, drawableBg.getHeight()), textPaint);
             Log.d(TAG, "draw bg--x:" + bgStyle.posX + " y:" + bgStyle.posY);
         }
 //        canvas.restore();
@@ -131,12 +148,33 @@ public class PostCardView extends View {
         //draw text
         List<CardTextStyle> texts = mCardStyle.cardTexts;
         if (texts != null) {
-            for (CardTextStyle textStyle : texts) {
+            float m = 0;
+            float l = 0;
+            for (int pos = 0; pos < texts.size(); pos++) {
+                CardTextStyle textStyle = texts.get(pos);
                 textPaint.reset();
                 textPaint.setColor(textStyle.textColor);
                 textPaint.setTextSize(getDpPix(textStyle.textSize));
                 if (textStyle.textIsTopDown) {
-                    float py = getPix(textStyle.posY);
+//                    for (int j = pos+1;j<texts.size();j++)
+//                        m += getDpPix(texts.get(j).textSize+10);
+                    if (pos == 0) {
+                        for (int j = pos; j < texts.size(); j++)
+                            m += getDpPix(texts.get(j).textSize + 10);
+                        m -= getDpPix(10);
+                    } else {
+                        m -= getDpPix(texts.get(pos - 1).textSize + 10) * 2;
+                    }
+                    l = 0;
+                    for (int i = 0; i < textStyle.textLength; i++) {
+                        if (i >= textStyle.text.length())
+                            break;
+                        String c = textStyle.text.substring(i, i + 1);
+                        float w = textPaint.measureText(c);
+                        l += w;
+                    }
+                    Log.d(TAG, "draw top down text x:" + m + " y:" + l);
+                    float py = getPixY(textStyle.posY, l);
                     for (int i = 0; i < textStyle.textLength; i++) {
                         if (i >= textStyle.text.length())
                             break;
@@ -144,18 +182,27 @@ public class PostCardView extends View {
                         float w = textPaint.measureText(c);
                         if (isChinese(c.charAt(0))) {
                             py += w;
-                            canvas.drawText(c, getPix(textStyle.posX), py, textPaint);//chinese character
+                            canvas.drawText(c, getPixX(textStyle.posX, m), py, textPaint);//chinese character
                         } else {
-                            canvas.drawTextOnPath(c, path, py, -getPix(textStyle.posX) - 2, textPaint);//其他文字处理方法
+                            canvas.drawTextOnPath(c, path, py, -getPixX(textStyle.posX, m) - 2, textPaint);//其他文字处理方法
                             py += w;
                         }
                     }
                 } else {
-                    textPaint.setTextAlign(Paint.Align.CENTER);
+                    textPaint.setTextAlign(textStyle.align);
                     int len = textStyle.textLength;
                     if (textStyle.text.length() < len)
                         len = textStyle.text.length();
-                    canvas.drawText(textStyle.text, 0, len, getPix(textStyle.posX), getPix(textStyle.posY), textPaint);
+
+                    if (pos == 0) {
+                        for (int j = pos + 1; j < texts.size(); j++)
+                            l += getDpPix(texts.get(j).textSize + 10);
+                        l -= getDpPix(texts.get(0).textSize);
+                    } else {
+                        l -= getDpPix(texts.get(pos - 1).textSize + 10) * 2;
+                    }
+//                    l = 0;
+                    canvas.drawText(textStyle.text, 0, len, getPixX(textStyle.posX, m), getPixY(textStyle.posY, l), textPaint);
                 }
 
                 Log.d(TAG, "draw text--x:" + textStyle.posX + " y:" + textStyle.posY);
@@ -165,17 +212,51 @@ public class PostCardView extends View {
     }
 
     //位置，大小等像素相关的使用
-    private float getPix(float dp) {
+
+    /**
+     * @param dp 1080p下应该的偏移dp
+     * @return 对应像素
+     */
+    private float getPixX(float dp) {
+        if (dp == -1)
+            return width / 2;
+//        return DensityUtil.dip2px(getContext(), dp * mWidthScale);
         return DensityUtil.dip2px(getContext(), dp * mScale);
     }
 
     private float getPixY(float dp) {
-        return DensityUtil.dip2px(getContext(), dp * mScale * mHeightScale / mWidthScale);
+        if (dp == -1)
+            return height / 2;
+//        return DensityUtil.dip2px(getContext(), dp * mHeightScale);
+        return DensityUtil.dip2px(getContext(), dp * mScale);
+    }
+
+    /**
+     * -1表示居中，－2表示起始位置在中间
+     *
+     * @param dp 1080p下其实dp
+     * @param w  当前偏移量，居中时用到，以方便不同行数字的居中
+     * @return 计算后对应像素
+     */
+    private float getPixX(float dp, float w) {
+        if (dp == -1)
+            return (width - w) / 2;
+        else if (dp == -2)
+            return (width) / 2;
+        return DensityUtil.dip2px(getContext(), dp * mScale);
+    }
+
+    private float getPixY(float dp, float l) {
+        if (dp == -1)
+            return (height - l) / 2;
+        else if (dp == -2)
+            return (height) / 2;
+        return DensityUtil.dip2px(getContext(), dp * mScale);
     }
 
     //字体等
     private float getDpPix(float dp) {
-        return DensityUtil.dip2px(getContext(), dp * mScale * mWidthScale);
+        return DensityUtil.dip2px(getContext(), dp * mScale);
     }
 //    public void save(){
 //        try{
@@ -204,7 +285,7 @@ public class PostCardView extends View {
         Canvas canvas = new Canvas(b);
         draw(canvas);
 
-        File f = new File(newPath());
+        File f = new File(newSavePath());
         new File(Environment.getExternalStorageDirectory().getPath() + "/card").mkdir();
         Log.d("SaveViewToFile path", f.getPath());
         if (f.exists())
@@ -228,6 +309,7 @@ public class PostCardView extends View {
         int textLength;
         boolean textIsTopDown;
         String text;
+        Paint.Align align = Paint.Align.CENTER;
 
         public CardTextStyle(int textColor, float textSize, float posX, float posY, int textLength, boolean textIsTopDown, String text) {
             this.textColor = textColor;
@@ -237,6 +319,17 @@ public class PostCardView extends View {
             this.textLength = textLength;
             this.textIsTopDown = textIsTopDown;
             this.text = text;
+        }
+
+        public CardTextStyle(int textColor, float textSize, float posX, float posY, int textLength, boolean textIsTopDown, String text, Paint.Align align) {
+            this.textColor = textColor;
+            this.textSize = textSize;
+            this.posX = posX;
+            this.posY = posY;
+            this.textLength = textLength;
+            this.textIsTopDown = textIsTopDown;
+            this.text = text;
+            this.align = align;
         }
     }
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lrc_tip"
+    android:layout_width="162dp"
+    android:layout_height="41dp"
+    android:layout_centerInParent="true"
+    android:background="@drawable/audio_bg_card_tip"
+    android:gravity="center"
+    android:minHeight="41dp"
+    android:minWidth="162dp"
+    android:text="已达歌词上限"
+    android:textColor="#FFFFFF"
+    android:textSize="16sp" />

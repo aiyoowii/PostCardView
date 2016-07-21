@@ -8,4 +8,45 @@
     <color name="lit_color_DDDDDD">#DDDDDD</color>
     <color name="lit_color_FFFFFF">#FFFFFF</color>
     <color name="lit_color_F3F3F3">#F3F3F3</color>
+    <color name="audioColorListText">#222222</color>
+
+    <color name="audioWhite">#ffffff</color>
+    <color name="audio_white_60alpha">#98ffffff</color>
+    <color name="audio_gray">#999999</color>
+    <color name="audio_black">#000000</color>
+    <color name="audio_blue">#2a7fe9</color>
+
+
+    <color name="audio_bg_mini_player">#f3f3f3</color>
+    <color name="audio_bg_tab_layout">#d0ffffff</color>
+    <color name="audio_bg_trans_black">#4e000000</color>
+
+    <color name="audio_lit_color_222222">#222222</color>
+    <color name="audio_lit_color_999999">#999999</color>
+    <color name="audio_lit_color_DDDDDD">#DDDDDD</color>
+    <color name="audio_lit_color_FFFFFF">#FFFFFF</color>
+    <color name="audio_lit_color_F3F3F3">#F3F3F3</color>
+
+    <color name="audio_divide_line_gray_c6">#c6c6c6</color>
+    <color name="audio_divide_line_gray_dd">#dddddd</color>
+    <color name="audio_my_muisc_text_gray">#6c6c6c</color>
+    <color name="audio_my_muisc_bg_gray">#f3f3f3</color>
+    <color name="audio_gray_f3">#f3f3f3</color>
+    <color name="audio_gray_66">#666666</color>
+    <color name="audio_gray_bb">#bbbbbb</color>
+    <color name="audio_gray_dd">#dddddd</color>
+    <color name="audio_gray_ee">#eeeeee</color>
+    <color name="audio_gray_ef">#efefef</color>
+    <color name="audio_gray_c6">#c6c6c6</color>
+    <color name="audio_gray_f9">#f9f9f9</color>
+    <color name="audio_red">#ff0000</color>
+    <color name="audio_white_a80">#ccffffff</color>
+    <color name="audio_black_6c">#6c6c6c</color>
+    <color name="audio_transparent_40">#66000000</color>
+    <color name="audio_transparent">#00000000</color>
+    <color name="audio_black_22">#222222</color>
+    <color name="audio_red_6e">#f16e6e</color>
+    <color name="audio_purple_9f">#1dce9f</color>
+    <color name="audio_blue_ff">#4ca2ff</color>
+    <color name="audio_del_red">#d00c0b</color>
 </resources>

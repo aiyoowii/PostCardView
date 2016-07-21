@@ -7,7 +7,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.renderscript.Allocation;
-import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.util.AttributeSet;
@@ -31,17 +30,18 @@ public class LiteratureView extends FrameLayout {
     private static final int DEFAULT_DIVIDER_HEIGHT = 24;
     private static final int PRE = -1, CUR = 0, NEXT = 1;
     ViewGroup mMiddle;
-    List<Literature> literatureList = new ArrayList<>();
+    List<Literature> literatureList = new ArrayList<Literature>();
     View preView, currentView, nextView, tempView;
     int curPos;
     boolean viewIsChanging;
-    Bitmap mMidBack;
+    //    Bitmap mMidBack;
     private View mHeader, mFooter;
     private int mDividerHeight = DEFAULT_DIVIDER_HEIGHT;
     private int mMidHeight;
     private int mFullHeight;
     private int mHalfHeight;
     private int mHeaderHeight;
+    private float headY = -1, footY = -1;
 
     public LiteratureView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -56,6 +56,7 @@ public class LiteratureView extends FrameLayout {
      * @param bitmap  原图
      * @return 高斯模糊处理过的bitmap
      */
+    @SuppressWarnings("unused")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public static Bitmap blurBitmap(Context context, Bitmap bitmap) {
 
@@ -66,7 +67,8 @@ public class LiteratureView extends FrameLayout {
         RenderScript rs = RenderScript.create(context);
 
         //Create an Intrinsic Blur Script using the Renderscript
-        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+        Allocation overlayAlloc = Allocation.createFromBitmap(rs, outBitmap);
+        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, overlayAlloc.getElement());
 
         //Create the Allocations (in/out) with the Renderscript and the in/out bitmaps
         Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
@@ -118,12 +120,18 @@ public class LiteratureView extends FrameLayout {
 
     private void onScrollUp() {
         mFooter.setVisibility(INVISIBLE);
+        preView.setVisibility(INVISIBLE);
         ViewPropertyAnimator curViewAnim = currentView.animate();
         curViewAnim.translationYBy(-mMidHeight - mDividerHeight);
-        curViewAnim.setDuration(1000);
+        curViewAnim.setDuration(700);
         final ViewPropertyAnimator nextViewAnim = nextView.animate();
         nextViewAnim.translationYBy(-mMidHeight - mDividerHeight);
-        nextViewAnim.setDuration(1000);
+        nextViewAnim.setDuration(700);
+        ViewPropertyAnimator headerViewAnim = mHeader.animate();
+        headerViewAnim.translationYBy(-mMidHeight - mDividerHeight);
+        headerViewAnim.setDuration(700);
+        headY = mHeader.getY();
+        headerViewAnim.start();
         curViewAnim.start();
         nextViewAnim.start();
         nextViewAnim.setListener(new AnimatorListenerAdapter() {
@@ -132,6 +140,9 @@ public class LiteratureView extends FrameLayout {
                 //remove listener, end会被调俩回,16+可用withEndAction替换
                 nextViewAnim.setListener(new AnimatorListenerAdapter() {
                 });
+                if (headY != -1)
+                    mHeader.setY(headY);
+                preView.setVisibility(VISIBLE);
                 curPos++;
                 tempView = preView;
                 preView = currentView;
@@ -150,12 +161,18 @@ public class LiteratureView extends FrameLayout {
 
     private void onScrollDown() {
         mHeader.setVisibility(INVISIBLE);
+        nextView.setVisibility(INVISIBLE);
         ViewPropertyAnimator curViewAnim = currentView.animate();
         curViewAnim.translationYBy(mMidHeight + mDividerHeight);
         curViewAnim.setDuration(1000);
         final ViewPropertyAnimator preViewAnim = preView.animate();
         preViewAnim.translationYBy(mMidHeight + mDividerHeight);
         preViewAnim.setDuration(1000);
+        ViewPropertyAnimator headerViewAnim = mFooter.animate();
+        headerViewAnim.translationYBy(mMidHeight + mDividerHeight);
+        headerViewAnim.setDuration(1000);
+        footY = mFooter.getY();
+        headerViewAnim.start();
         curViewAnim.start();
         preViewAnim.start();
         preViewAnim.setListener(new AnimatorListenerAdapter() {
@@ -163,6 +180,9 @@ public class LiteratureView extends FrameLayout {
             public void onAnimationEnd(Animator animation) {
                 preViewAnim.setListener(new AnimatorListenerAdapter() {
                 });
+                if (footY != -1)
+                    mFooter.setY(footY);
+                nextView.setVisibility(VISIBLE);
                 curPos--;
                 tempView = nextView;
                 nextView = currentView;
@@ -216,7 +236,7 @@ public class LiteratureView extends FrameLayout {
         TextView author = (TextView) v.findViewById(R.id.tv_author);
         TextView content = (TextView) v.findViewById(R.id.tv_content);
         title.setText(literatureList.get(pos).getTitle());
-        author.setText(literatureList.get(pos).getPublish_time() + "作者:" + literatureList.get(pos).getAuthor());
+        author.setText(String.format("%s 作者：%s", literatureList.get(pos).getTime(), literatureList.get(pos).getAuthor()));
         if (content != null)
             content.setText(literatureList.get(pos).getContent());
     }
@@ -312,6 +332,8 @@ public class LiteratureView extends FrameLayout {
     }
 
     public void notifyDateChange() {
+        if (literatureList.isEmpty())
+            return;
         if (curPos >= literatureList.size())
             curPos = literatureList.size() - 1;
         resetContentView(currentView, CUR, curPos);
